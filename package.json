@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "pandas": "^0.0.3",
+    "react-nfl-logos": "^1.0.3"
+  }
+}
