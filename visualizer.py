@@ -1,15 +1,14 @@
 import pandas as pd
 import numpy as np
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware  # Allow cross-origin requests
+from fastapi.middleware.cors import CORSMiddleware 
 from pydantic import BaseModel
 
 app = FastAPI()
 
-# Enable CORS for your Next.js frontend (adjust origins as needed)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # or "*" for testing purposes
+    allow_origins=["http://localhost:3000"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
