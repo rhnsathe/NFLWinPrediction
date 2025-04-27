@@ -1,16 +1,15 @@
 import pandas as pd
 import numpy as np
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware  # Allow cross-origin requests
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime
 
 app = FastAPI()
 
-# Enable CORS for your Next.js frontend (adjust origins as needed)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # or "*" for testing purposes
+    allow_origins=["http://localhost:3000"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -22,18 +21,14 @@ df = pd.read_csv("games.csv")
 df['gameday'] = pd.to_datetime(df['gameday'])
 df.sort_values(['away_team', 'gameday'], inplace=True)
 
-# Example: Calculate rest days for away teams
-df['away_rest_days'] = df.groupby('away_team')['gameday'].diff().dt.days.fillna(7)  # default 7 days if NaN
+df['away_rest_days'] = df.groupby('away_team')['gameday'].diff().dt.days.fillna(7)
 
-# Similarly for home teams
 df.sort_values(['home_team', 'gameday'], inplace=True)
 df['home_rest_days'] = df.groupby('home_team')['gameday'].diff().dt.days.fillna(7)
 
-# Encode categorical features: roof and surface
 df['roof_encoded'] = df['roof'].map({'dome': 1, 'outdoors': 0})
 df['surface_cleaned'] = df['surface'].fillna('nan').str.strip().str.lower()
 
-# 2. Create a dictionary for all known surface types
 surface_map = {
     'grass': 0,
     'fieldturf': 1,
@@ -43,17 +38,13 @@ surface_map = {
     'astroplay': 5,
     'a_turf': 6,
     'matrixturf': 7,
-    # 'nan' will stand for any missing/unknown surface
     'nan': -1
 }
 
-# 3. Apply the mapping
 df['surface_encoded'] = df['surface_cleaned'].map(surface_map)
 
-# Create target variable (example: 1 if home wins, 0 otherwise)
 df['home_win'] = (df['home_score'] > df['away_score']).astype(int)
 
-# You may also calculate difference features
 df['moneyline_diff'] = -(df['home_moneyline'] - df['away_moneyline'])
 
 from sklearn.model_selection import train_test_split, cross_val_score
@@ -64,7 +55,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.impute import SimpleImputer
 
-# Define features and target
 features = ['away_rest_days', 'home_rest_days', 'moneyline_diff', 'spread_line', 
             'temp', 'wind', 'roof_encoded', 'surface_encoded']
 target = 'home_win'
@@ -98,11 +88,9 @@ print(f'Random Forest CV ROC AUC: {cv_scores_rf.mean():.3f}')
 
 pipeline_rf.fit(X_train, y_train)
 
-# Predict on the test set
 y_pred_rf = pipeline_rf.predict(X_test)
 y_proba_rf = pipeline_rf.predict_proba(X_test)[:, 1]
 
-# Evaluate
 print('Random Forest Test Accuracy:', accuracy_score(y_test, y_pred_rf))
 print('Random Forest Test ROC AUC:', roc_auc_score(y_test, y_proba_rf))
 
